@@ -9,9 +9,11 @@ logger = logging.getLogger()
 
 
 class NotifyDBus():
-    def __init__(self, bus):
+    def __init__(self, bus, callback):
         self.bus = bus
         self._notifications = None
+        self.register_event(callback)
+        self.active_event = 0
 
     def register_event(self, callback):
         if not isinstance(callback, Callable):
@@ -27,14 +29,21 @@ class NotifyDBus():
 
     def plug(self):
         logger.debug("plug")
-        notification_id = self.notifications.Notify('Headphones', 0, 'audio-headphones', "Headphones plugged in", "resuming spotify",
+        notification_id = self.notifications.Notify('Headphones', self.active_event, 'audio-headphones', "Headphones plugged in", "resuming spotify",
                                                ["cancel_play", "cancel"], {}, 5000)
-        return notification_id
+        self.active_event = notification_id
 
     def unplug(self):
-        notification_id = self.notifications.Notify('Headphones', 0, 'audio-headphones', "Headphones removed", "pausing spotify",
+        notification_id = self.notifications.Notify('Headphones', self.active_event, 'audio-headphones', "Headphones removed", "pausing spotify",
                                                ["cancel_pause", "cancel"], {}, 5000)
-        return notification_id
+        self.active_event = notification_id
+
+    def unlock(self):
+        logger.debug("unlock")
+        notification_id = self.notifications.Notify('Headphones', self.active_event, 'audio-headphones', "Screen unlocked",
+                                                    "resuming spotify",
+                                                    ["cancel_play", "cancel"], {}, 5000)
+        self.active_event = notification_id
 
     @property
     def notifications(self):

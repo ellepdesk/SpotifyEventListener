@@ -11,13 +11,14 @@ class SpotifyDBus():
 
     def command(self, cmd):
         try:
-            logger.debug("Executing command {}".format(cmd))
+            logger.info("Executing command {}".format(cmd))
             attribute = getattr(self.spotify, cmd)
             if isinstance(attribute, Callable):
                 return attribute()
             else:
                 return attribute
         except:
+            logger.exception("")
             self._spotify = None
 
     @property

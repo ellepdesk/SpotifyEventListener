@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 class AcpiEventListener(Thread):
     def __init__(self, callback=None, path='/var/run/acpid.socket'):
-        super().__init__()
+        super().__init__(name=__name__, daemon=True)
         logger.info('connecting to {}'.format(path))
         self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         self.sock.connect(path)
@@ -34,6 +34,7 @@ class AcpiEventListener(Thread):
 
     def stop(self):
         self.running.clear()
+        self.sock.close()
 
 
 if __name__ == '__main__':
