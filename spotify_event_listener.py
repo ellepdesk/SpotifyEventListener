@@ -22,32 +22,35 @@ class SpotifyEventListener(ThreadGroup):
         self.notify = NotifyDBus(bus, callback=self.event_handler)
         self.scheduler = EventScheduler()
         self.add(self.scheduler)
+        self.was_playing = False
 
     def play(self):
-        self.scheduler.cancel('Pause')
-        self.spotify.command('Play')
+        if self.was_playing:
+            self.scheduler.cancel('Pause')
+            self.spotify.command('Play')
 
     def pause(self):
-        self.scheduler.cancel('Play')
-        self.spotify.command('Pause')
+        self.was_playing = self.spotify.is_playing()
+        if self.was_playing:
+            self.scheduler.cancel('Play')
+            self.spotify.command('Pause')
 
     def event_handler(self, event):
         if event == ['acpi', 'jack/headphone', 'HEADPHONE', 'plug']:
             logger.info("Headphones plugged in")
-            self.notify.plug()
+            self.notify.plug(self.was_playing)
             self.play()
 
         elif event == ['acpi', 'jack/headphone', 'HEADPHONE', 'unplug']:
             logger.info("Headphones removed")
-            self.spotify.is_playing()
-            self.notify.unplug()
+            self.notify.unplug(self.spotify.is_playing())
             self.scheduler.add(identifier='pause', delay=5, action=self.pause)
 
         elif event == ['dbus', 'ScreenSaver', True]:
             self.scheduler.add(identifier='Pause', delay=5, action=self.pause)
 
         elif event == ['dbus', 'ScreenSaver', False]:
-            self.notify.unlock()
+            self.notify.unlock(self.was_playing)
             self.scheduler.add(identifier='Play', delay=5, action=self.play)
 
         elif event[:2] == ['dbus', 'Notification']:

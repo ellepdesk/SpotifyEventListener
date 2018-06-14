@@ -21,6 +21,9 @@ class SpotifyDBus():
             logger.exception("")
             self._spotify = None
 
+    def is_playing(self):
+        return (self.spotify.PlaybackStatus == "Playing")
+
     @property
     def spotify(self):
         if not self._spotify:
@@ -29,12 +32,9 @@ class SpotifyDBus():
         return self._spotify
 
 
-    def is_playing(self):
-        return(self.spotify.PlaybackStatus == "Playing")
-
-
 if __name__ == '__main__':
     logging.basicConfig(format='%(asctime)s %(name)s:%(levelname)s:%(message)s', level=logging.DEBUG)
-    spotify = SpotifyDBus()
+    from pydbus import SessionBus
+    spotify = SpotifyDBus(SessionBus())
     print(spotify.is_playing())
     print(spotify.command("Play"))

@@ -27,21 +27,21 @@ class NotifyDBus():
         logger.debug("registering notification close")
         return self.notifications.NotificationClosed.connect(lambda *event: callback(["dbus", "Notification", event]))
 
-    def plug(self):
+    def plug(self, playing):
         logger.debug("plug")
-        notification_id = self.notifications.Notify('Headphones', self.active_event, 'audio-headphones', "Headphones plugged in", "resuming spotify",
+        notification_id = self.notifications.Notify('Headphones', self.active_event, 'audio-headphones', "Headphones plugged in", "resuming spotify" if playing else "" ,
                                                ["cancel_play", "cancel"], {}, 5000)
         self.active_event = notification_id
 
-    def unplug(self):
-        notification_id = self.notifications.Notify('Headphones', self.active_event, 'audio-headphones', "Headphones removed", "pausing spotify",
+    def unplug(self, playing):
+        notification_id = self.notifications.Notify('Headphones', self.active_event, 'audio-headphones', "Headphones removed", "pausing spotify" if playing else "",
                                                ["cancel_pause", "cancel"], {}, 5000)
         self.active_event = notification_id
 
-    def unlock(self):
+    def unlock(self, playing):
         logger.debug("unlock")
         notification_id = self.notifications.Notify('Headphones', self.active_event, 'audio-headphones', "Screen unlocked",
-                                                    "resuming spotify",
+                                                    "resuming spotify" if playing else "",
                                                     ["cancel_play", "cancel"], {}, 5000)
         self.active_event = notification_id
 
