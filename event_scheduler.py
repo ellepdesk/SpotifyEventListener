@@ -25,6 +25,8 @@ class EventScheduler(Thread):
 
     def cancel(self, identifier):
         event = self.events.get(identifier)
+        if not event:
+            return
         try:
             self.sched.cancel(event)
         except ValueError:
